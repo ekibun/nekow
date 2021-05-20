@@ -1,13 +1,6 @@
 #include "webview.hpp"
 #include <tchar.h>
 
-static TCHAR *szWindowClass = _T("DesktopApp");
-static TCHAR *szTitle = _T("nekow");
-
-HINSTANCE hInst;
-
-webview::WebView *webInst;
-
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 
 int CALLBACK WinMain(
@@ -16,6 +9,8 @@ int CALLBACK WinMain(
 		_In_ LPSTR lpCmdLine,
 		_In_ int nCmdShow)
 {
+	TCHAR *szWindowClass = _T("DesktopApp");
+	TCHAR *szTitle = _T("nekow");
 	WNDCLASSEX wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -51,7 +46,8 @@ int CALLBACK WinMain(
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
 
-	webInst = new webview::WebView(hWnd);
+	webview::WebView webView(hWnd);
+	SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)&webView);
 
 	MSG msg;
 	while (GetMessage(&msg, NULL, 0, 0))
@@ -59,23 +55,21 @@ int CALLBACK WinMain(
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
-
-	delete webInst;
-
 	return (int)msg.wParam;
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	auto webView = (webview::WebView *)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	switch (message)
 	{
 	case WM_SIZE:
-		if (webInst != nullptr) 
+		if (webView != nullptr)
 		{
 			RECT bounds;
 			GetClientRect(hWnd, &bounds);
-			webInst->put_Bounds(bounds);
-		};
+			webView->put_Bounds(bounds);
+		}
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
